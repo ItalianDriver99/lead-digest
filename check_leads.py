@@ -1,12 +1,14 @@
+import csv
+import io
 import os
 from datetime import date
+from urllib.parse import quote
 
 import requests
 
 SHEET_ID = "1-ZLZsp5yF4oan04zxoWvgguz_IumUFK1bRauHJLmEog"
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
-GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
 
 SHEETS = ["DE/FR/NL", "Europe"]
 
@@ -18,14 +20,15 @@ COL_TYPE = 3
 COL_ACQUIRED = 5
 COL_STATUS = 10
 
-BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets"
-
 
 def fetch_sheet(sheet_name: str) -> list[list[str]]:
-    url = f"{BASE_URL}/{SHEET_ID}/values/{sheet_name!r}!A:K"
-    r = requests.get(url, params={"key": GOOGLE_API_KEY}, timeout=30)
+    url = (
+        f"https://docs.google.com/spreadsheets/d/{SHEET_ID}"
+        f"/gviz/tq?tqx=out:csv&sheet={quote(sheet_name)}"
+    )
+    r = requests.get(url, timeout=30)
     r.raise_for_status()
-    return r.json().get("values", [])
+    return list(csv.reader(io.StringIO(r.text)))
 
 
 def get_today_leads(rows: list[list[str]]) -> list[list[str]]:
