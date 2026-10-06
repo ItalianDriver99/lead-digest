@@ -1,0 +1,20 @@
+name: Heartbeat
+
+on:
+  push:
+    paths:
+      - '.github/workflows/heartbeat.yml'
+  workflow_dispatch:        # allows manual trigger from GitHub Actions tab
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send heartbeat notification
+        run: |
+          curl -sS --fail-with-body -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${CHAT_ID}\", \"text\": \"Daily leads agent is alive and running!\"}"
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
